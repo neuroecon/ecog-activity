@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    /**
+     * Set global font and size
+     **/
+    html * {
+      font-family:"Roboto", "Helvetica", "Arial", sans-serif;
+      font-size: 5vmin;
+    }
+
+    /**
+     * Intro
+     **/
+    .main-div, #view-results {
+      /* All content starts out as hidden, revealed as necessary*/
+      display: none;
+    }
+
+    .intro-box {
+      width: 90vmin;
+      height: 55vmin;
+    }
+
+    button {
+      border: none;
+      color: white;
+      text-align: center;
+      padding: .5vmin 1.5vmin .5vmin 1.5vmin;
+      margin: 0px;
+      font-size: 4vmin;
+      cursor: pointer;
+      border-radius: .5vmin;
+    }
+
+    button.next {
+      background-color: #777;
+    }
+
+    button.previous {
+      background-color: #999;
+    }
+
+    button.next:hover {
+      background-color: #aaa;
+    }
+
+    button.previous:hover {
+      background-color: #bbb;
+    }
+
+    /**
+     * Intro3 Controls Demo
+     **/
+     .decisions-demo {
+       width: 75vmin;
+       height: 48vmin;
+     }
+
+     .decision-box-highlighted {
+       border-color: #44f;
+     }
+
+    /**
+     * Decision Boxes
+     **/
+    .decisions {
+      width: 90vmin;
+      height: 55vmin;
+    }
+
+    .decision-box {
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: -ms-flexbox;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position:relative;
+      align-items: center;
+      width: 45%;
+      height: 100%;
+      border-radius: 1.5vmin;
+      border: .6vmin solid #ec0;
+      font-size: 5vmin;
+      background-color: #f8f8f8;
+    }
+
+    .decision-box-highlighted {
+      border-color: #44f;
+    }
+
+    #left-decision, #left-decision-demo {
+      float: left;
+    }
+
+    #right-decision, #right-decision-demo {
+      float: right;
+    }
+
+    .decision-box:hover {
+      border-color: #44f;
+      cursor: pointer;
+    }
+
+    .selected-decision {
+      border-color: #44f;
+    }
+
+    .other-decision {
+      border-color: #f8f8f8;
+    }
+
+    .other-decision:hover {
+      border-color: #f8f8f8;
+    }
+
+    .timeout-decision {
+      border-color: #f44;
+    }
+
+    .timeout-decision:hover {
+      border-color: #f44;
+    }
+
+    .decision-box, .decision-box-demo, button {
+      -webkit-touch-callout: none; /* iOS Safari */
+        -webkit-user-select: none; /* Safari */
+         -khtml-user-select: none; /* Konqueror HTML */
+           -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* Internet Explorer/Edge */
+                user-select: none; /* Non-prefixed version, currently
+                                      supported by Chrome and Opera */
+    }
+
+    /**
+     * Game Indicators
+     **/
+     #timer {
+       padding-top: 2vmin;
+       padding-bottom: 2vmin;
+     }
+
+     #round-num {
+       font-size: 6vmin;
+       padding-top: 3vmin;
+     }
+
+    /**
+     * Slot Machine
+     **/
+
+     .slot-wrapper {
+       position: relative;
+       font-size: inherit;
+       width: 100%;
+       height: 60%;
+     }
+
+     .slot-wrapper img {
+       position: absolute;
+       width: 100%;
+       height: auto;
+       left: 0%;
+       top: 10%;
+     }
+
+     #risky-val {
+       font-size: inherit;
+       position: absolute;
+       top: 2%;
+     }
+
+     #visible-num {
+       font-size: 5vmin;
+       position: absolute;
+       bottom: 20%;
+       left:33%;
+     }
+
+     #hidden-num {
+       font-size: 5vmin;
+       display: none;
+       position: absolute;
+       bottom: 20%;
+       right:33%;
+     }
+
+    /**
+     * Results
+     **/
+
+    table {
+      border-spacing: 0;
+      table-layout: fixed;
+      border-collapse: collapse;
+      margin-left: 10%;
+      margin-right: 10%;
+      width: 80%;
+      border: 1px solid #ddd;
+    }
+
+    th, td {
+      text-align: center;
+      padding: 1vmin 3vmin;
+      font-size: 3vmin;
+      text-align: left;
+    }
+    tr:nth-child(odd) {
+      background-color: #f2f2f2;
+    }
+
+    tr:hover, thead:hover {
+      background-color: #def1fc;
+    }
+
+    #results-div {
+      font-size: 3vmin;
+    }
+
+    #results-div br {
+      display: block;
+      margin: 0px;
+      padding: 0px;
+      line-height: 0px;
+    }
+
+  </style>
+  <script>
+    window.onload = function() {
+      /**
+       * Page navigation setup
+       **/
+
+      var pages = ["intro1", "intro2", "intro3", "intro4", "main-game", "results"];
+
+      var page_dict = {
+        "intro1" : document.getElementById("intro1"),
+        "intro2" : document.getElementById("intro2"),
+        "intro3" : document.getElementById("intro3"),
+        "intro4" : document.getElementById("intro4"),
+        "main-game": document.getElementById("main-game"),
+        "results": document.getElementById("results"),
+      };
+
+      var curr_page_index = 0;
+      var curr_page = "intro1";
+      set_page(curr_page);
+
+      function change_page(direction) {
+        curr_page_index += direction;
+        curr_page_index = Math.max(0, curr_page_index);
+        curr_page_index = Math.min(5, curr_page_index);
+        set_page(pages[curr_page_index]);
+      }
+
+      function set_page(page) {
+        for (var key in page_dict) {
+          page_dict[key].style.display = 'none';
+        }
+        page_dict[page].style.display = 'inline';
+        curr_page = page;
+      }
+
+      next_buttons = document.getElementsByClassName("next");
+      prev_buttons = document.getElementsByClassName("previous");
+
+      for(var i = 0; i < next_buttons.length; i++) {
+        next_buttons[i].onclick = function() {
+          change_page(1);
+        };
+      }
+
+      for(var i = 0; i < prev_buttons.length; i++) {
+        prev_buttons[i].onclick = function() {
+          change_page(-1);
+        };
+      }
+
+      var start_game = document.getElementById('start-game');
+      start_game.onclick = function() {
+        timer_div.innerHTML = "Get ready";
+        round_div.innerHTML = "Round 1";
+        change_page(1);
+        sleep(400);
+        start_countdown(1000);
+      };
+
+      /**
+       *Demo setup
+       **/
+
+      var demo_boxes = [
+        document.getElementById("left-decision-demo"),
+        document.getElementById("right-decision-demo"),
+      ];
+
+      document.addEventListener("keydown", async function(event) {
+        if(curr_page == "intro3") {
+          var box_index = get_box_index(event);
+          if(box_index != -1) {
+            demo_boxes[box_index].classList.add("decision-box-highlighted");
+          }
+        }
+    		if(curr_page == "main-game") {
+    		  var box_index = get_box_index(event); //Reusing get_box_index from demo section
+    		  if(box_index != -1) {
+    			await pick(box_index);
+    		  }
+    		}
+        if((event.keyCode || event.which) == 8){
+          if(curr_page == "intro2" || curr_page == "intro3" || curr_page == "intro4") {
+            change_page(-1);
+          }
+        }
+      });
+
+      document.addEventListener("keyup", function(event) {
+        if(curr_page == "intro3") {
+          var box_index = get_box_index(event);
+          if(box_index != -1) {
+            demo_boxes[box_index].classList.remove("decision-box-highlighted");
+          }
+        }
+      });
+
+      //Converts keypress to index of desired box, or -1 if not valid keypress
+      function get_box_index(event) {
+          var k = event.keyCode || event.which;
+          if (k == 49 || k == 37 || k == 97) {
+            return 0;
+          } else if (k == 51 || k == 39 || k == 99) {
+            return 1;
+          }
+          return -1;
+      }
+
+      /**
+       * Main game
+       **/
+
+      /* Get important elements */
+      var boxes = [
+        document.getElementById("left-decision"),
+        document.getElementById("right-decision")
+      ];
+      var round_div = document.getElementById("round-num");
+      var timer_div = document.getElementById("timer");
+      var view_results_button = document.getElementById("view-results");
+      var results_div = document.getElementById("results-div");
+
+      /* Game constants */
+      const NUM_ROUNDS = 15; //Number of rounds
+      const OUTCOME_REVEAL_MS = 550; //Delay between selection and showing outcome
+      const MIN_RISKY_PAYOUT = 15;
+      const MAX_RISKY_PAYOUT = 35;
+      const DECISION_TIME_MS = 2000; //Amount of time to make of decision
+
+      /* Game variables */
+      var lock_input = true; //Ignore clicks/keyinput while this is true
+      var results = { //Stores results for display at end
+        'net'   : 0, //net profit
+        'safe'  : 0, //Safe bets made
+        'risky' : 0, //Risky bets made
+        'miss'  : 0, //Rounds where player ran out of time
+        'total_response_time': 0, //Sum of time taken to respond each round
+      };
+      var round_num = 0; //Round num starts at 0, since it increments before each round starts
+      var remaining_time = 0; //Used by the start_timer method
+      var timer = null; //Reference to the main timer interval, set by the start_time method
+      var slot_nums = null; //Length 2 array containing [visible_num, hidden_num], set by new_round()
+      var safe_index = null; //Index of safe option, set by new_round()
+
+      /**
+       * Round Setup
+       **/
+
+      //Increments round number, sets up slot machine values, then starts timer
+      function new_round() {
+        clear_box_styles(); //Remove any styles from previous round
+
+        round_num += 1; //Increment and display round number
+        round_div.innerHTML = `Round ${round_num}`;
+
+        var risky_index = Math.floor(Math.random() * 2); //Choose index for the risky choice
+        safe_index = 1 - risky_index;
+
+        var risky_box = boxes[risky_index];
+        var safe_box  = boxes[safe_index];
+        slot_nums = get_slot_nums();
+
+        risky_box.innerHTML = `<span id="risky-val"><br>$${risky_payout()}</span>
+                               <div class="slot-wrapper">
+                                  <img src=https://i.imgur.com/7PvSUMI.png width=100% height=auto>
+                                  <span id='visible-num'>${slot_nums[0]}</span>
+                                  <span id='hidden-num'>${slot_nums[1]}</span>
+                               </div>`;
+        safe_box.innerHTML  = "$10";
+        lock_input = false; //Allow input after setting up decisions
+        start_timer(DECISION_TIME_MS); //Start countdown
+      }
+
+      //Remove any styles from previous round
+      function clear_box_styles() {
+        //Avoiding an enhanced for loop here for browser compatability
+        boxes[0].classList.remove('timeout-decision');
+        boxes[0].classList.remove('selected-decision');
+        boxes[0].classList.remove('other-decision');
+        boxes[1].classList.remove('timeout-decision');
+        boxes[1].classList.remove('selected-decision');
+        boxes[1].classList.remove('other-decision');
+      }
+
+      //Determines risky payout, as multiple of five between MIN_RISKY_PAYOUT and MAX_RISKY_PAYOUT inclusive
+      function risky_payout() {
+        var range = (MAX_RISKY_PAYOUT - MIN_RISKY_PAYOUT) / 5 + 1
+        return MIN_RISKY_PAYOUT + Math.floor(Math.random() * 5) * range;
+      }
+
+      //Returns a pair of numbers between 0 and 9 inclusive, in format [visible, hidden]
+      function get_slot_nums() {
+        var visible = Math.floor(Math.random() * 10);
+        var hidden = (visible + Math.floor(Math.random() * 9) + 1) % 10
+        //Guarrantees that visible != hidden
+        return [visible, hidden]
+      }
+
+      /**
+       * Timing
+       **/
+
+      //Pauses script for ms milliseconds
+      async function sleep(ms) {
+        await new Promise(resolve => setTimeout(resolve, ms));
+      }
+
+      //Starts timer at top of game, stores interval as 'timer' variable
+      function start_timer(time_s) {
+        remaining_time = time_s / 1000;
+        timer = setInterval(async function() {
+          timer_div.innerHTML = `${remaining_time.toFixed(2)}s remaining`;
+          remaining_time -= .03;
+          if(remaining_time < 0) {
+            lock_input = true;
+            timer_div.innerHTML = "Out of time!";
+            clearInterval(timer);
+            await timeout();
+          }
+        }, 30);
+      }
+
+      //Starts the countdown before each round
+      function start_countdown(rate_ms) {
+        if(round_num == NUM_ROUNDS) {
+          view_results_button.style.display = 'inline';
+          load_results();
+          return;
+        }
+        var countdown = 3;
+        timer = setInterval(async function() {
+          timer_div.innerHTML = `Next round in ${countdown}...`;
+          if(countdown <= 0) {
+            clearInterval(timer);
+            await sleep(200);
+            new_round();
+          }
+          countdown -= 1;
+        }, rate_ms);
+      }
+
+      // Reveals number and starts next round if player runs out of time
+      async function timeout() {
+        results.miss += 1;
+        boxes[0].classList.add('timeout-decision');
+        boxes[1].classList.add('timeout-decision');
+        await sleep(OUTCOME_REVEAL_MS);
+        var hidden_num = document.getElementById('hidden-num');
+        hidden_num.style.display = "inline";
+        start_countdown(500);
+      }
+
+      /**
+       * Input handling
+       **/
+       async function pick(index) {
+         if (!lock_input) {
+           results.total_response_time += DECISION_TIME_MS / 1000 - remaining_time;
+           await check_decision(index);
+         }
+       }
+
+       boxes[0].onclick = async function() {
+         await pick(0);
+       }
+
+       boxes[1].onclick = async function() {
+         await pick(1);
+       }
+
+       document.addEventListener("keypress", async function(event) {
+         if((event.keyCode || event.which) == 13){
+           if(curr_page == "intro4") {
+             start_game.onclick();
+           } else if(curr_page =="main-game") {
+             if(round_num == NUM_ROUNDS) {
+               view_results_button.onclick();
+             }
+           }
+           else {
+             change_page(1);
+           }
+         }
+       });
+
+       /**
+        * Outcome reveal
+        **/
+
+        //Checks and reveals outcome of player's decision
+        async function check_decision(selected_index) {
+          lock_input = true; //Disallow further input
+          clearInterval(timer); //Stop timer
+
+          //Style boxes appropriately
+          boxes[selected_index].classList.add('selected-decision');
+          boxes[1 - selected_index].classList.add('other-decision');
+
+          //Delay
+          await sleep(OUTCOME_REVEAL_MS);
+          reveal_outcome(selected_index);
+
+          //Start countdown to next round
+          start_countdown(500);
+        }
+
+        function reveal_outcome(selected_index) {
+          //Get relevant elements
+          var hidden_num = document.getElementById('hidden-num');
+          var risky_span = document.getElementById('risky-val');
+          var risky_val = parseInt(risky_span.innerHTML.substring(5));
+
+          //Update results
+          if(selected_index == safe_index) {
+            results.safe += 1;
+            results.net += 10;
+          } else {
+            results.risky += 1;
+          }
+
+          if(slot_nums[0] > slot_nums[1]) { //Losing
+            risky_span.style.color  = "red";
+            hidden_num.style.color = "red";
+            if(selected_index == safe_index){
+              risky_span.innerHTML = `You would have lost $${risky_val}`;
+            } else {
+              results.net -= risky_val;
+              risky_span.innerHTML = `You lose <br> $${risky_val}`;
+            }
+          }
+          else { //Winning
+            risky_span.style.color  = "green";
+            hidden_num.style.color = "green";
+            if(selected_index == safe_index){
+              risky_span.innerHTML = `You would have won $${risky_val}`;
+            } else {
+              results.net += risky_val;
+              risky_span.innerHTML = `You win <br> $${risky_val}`;
+            }
+          }
+          hidden_num.style.display = "inline"; //Reveal number either way
+        }
+
+      /**
+       * Results
+       **/
+
+      //Loads results and shows on final page
+      function load_results() {
+        var average_response_time = (results.total_response_time / NUM_ROUNDS).toFixed(2)
+        var net_gain = results.net;
+        if(net_gain >= 0) {
+          net_gain = `$${net_gain}`;
+        } else {
+          net_gain = `-$${-net_gain}`
+        }
+        results_div.innerHTML = `<table>
+                                 <tr><td>Net Gain </td><td>${net_gain}</td></tr>
+                                 <tr><td>Safe Choices </td><td>${results.safe} </td></tr>
+                                 <tr><td>Risky Choices </td><td>${results.risky} </td></tr>
+                                 <tr><td>Mean Response Time</td><td> ${average_response_time}s </td></tr></table>`;
+      }
+    }
+  </script>
+  <noscript>
+    <style type="text/css">
+        .pagecontainer {display:none;}
+    </style>
+    <div class="noscriptmsg">
+		Please enable javascript to interact with this demo.
+    </div>
+</noscript>
+</head>
+<body>
+  <center>
+  <!-- Introduction 1 -->
+  <div class="main-div" id="intro1">
+    <div class="intro-box">
+    <br> In this game, you will be given a choice between two bets: <br>
+    <center> <img src=https://i.imgur.com/BXeQpKd.png width=71%> </center><br>
+    A Safe bet, and a Risky bet. The Safe bet will always give you the amount displayed.<br>
+    <button class="next">Next</button>
+    </div>
+  </div>
+
+  <!-- Introduction 2 -->
+  <div class="main-div" id="intro2">
+    <div class="intro-box">
+    The risky bet has a visible digit and a hidden digit. <br>
+    <img src=https://i.imgur.com/QKfQsdG.png width=80%> <br>
+    If the hidden digit is larger than the shown digit, you win the amount displayed. Otherwise, you lose that amount.<br>
+    <button class="previous">Previous</button>
+    <button class="next">Next</button>
+    </div>
+  </div>
+
+  <!-- Introduction 3 -->
+  <div class="main-div" id="intro3">
+    <div class="intro-box">
+    Click or tap the option you want to choose to select it.<br>
+    <div class="decisions-demo">
+      <div class = "decision-box" id="left-decision-demo">
+        Select by clicking or using the '1' key
+      </div>
+      <div class = "decision-box" id="right-decision-demo">
+        Select by clicking or using the '3' key
+      </div>
+    </div>
+    <br>
+    You can also use the '1' key to select the left option, and '3' key to select the right option. <br>
+    <button class="previous">Previous</button>
+    <button class="next">Next</button>
+    </div>
+  </div>
+
+  <!-- Introduction 4-->
+  <div class="main-div" id="intro4">
+    <div class="intro-box">
+    <br> You have two seconds to make a decision.<br>
+    <img src=https://i.imgur.com/8hgSzLa.png width=74%> <br>
+    If you don't make a decision in time, the borders will turn red and you will earn nothing. <br>
+    <button class="previous">Previous</button>
+    <button class="next" id="start-game">Play</button>
+    </div>
+  </div>
+  <!-- Main Game -->
+  <div class="main-div" id="main-game">
+    <span id="timer"></span>
+    <div class="decisions">
+      <div class = "decision-box" id="left-decision" ></div>
+      <div class = "decision-box" id="right-decision"></div>
+    </div>
+    <div id="round-num"></div>
+    <button class="next" id="view-results">View Results</button>
+  </div>
+
+  <!-- Results -->
+  <div class="main-div" id="results">
+    Results <br>
+    <div class='intro-box' id='results-div'></div>
+  </div>
+
+  </center>
+
+  <!-- Preload slot machine image -->
+  <img src=https://i.imgur.com/7PvSUMI.png style="display:none;">
+</body>
+</html>
