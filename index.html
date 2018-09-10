@@ -40,7 +40,7 @@
     }
 
     button.previous {
-      background-color: #999;
+      background-color: #888;
     }
 
     button.next:hover {
@@ -386,7 +386,7 @@
 
         risky_box.innerHTML = `<span id="risky-val"><br>$${risky_payout()}</span>
                                <div class="slot-wrapper">
-                                  <img src=https://i.imgur.com/7PvSUMI.png width=100% height=auto>
+                                  <img src=resources/slot_machine.png width=100% height=auto>
                                   <span id='visible-num'>${slot_nums[0]}</span>
                                   <span id='hidden-num'>${slot_nums[1]}</span>
                                </div>`;
@@ -576,7 +576,7 @@
   <div class="main-div" id="intro1">
     <div class="intro-box">
     <br> In this game, you will be given a choice between two bets: <br>
-    <center> <img src=https://i.imgur.com/BXeQpKd.png width=71%> </center><br>
+    <center> <img src=resources/demo_intro.png width=71%> </center><br>
     A Safe bet, and a Risky bet. The Safe bet will always give you the amount displayed.<br>
     <button class="next">Next</button>
     </div>
@@ -586,7 +586,7 @@
   <div class="main-div" id="intro2">
     <div class="intro-box">
     The risky bet has a visible digit and a hidden digit, both between 0 and 10. <br>
-    <img src=https://i.imgur.com/QKfQsdG.png width=80%> <br>
+    <img src=resources/demo_slot.png width=80%> <br>
     If the hidden digit is larger than the shown digit, you win the amount displayed. Otherwise, you lose that amount.<br>
     <button class="previous">Previous</button>
     <button class="next">Next</button>
@@ -608,7 +608,7 @@
     <br>
     You can also use the '1' key to select the left option, and '3' key to select the right option. <br>
     <button class="previous">Previous</button>
-    <button class="next" id="start-game">Play</button>
+    <button class="next" id="start-game">Start Game</button>
     </div>
   </div>
 
@@ -634,6 +634,6 @@
   </center>
 
   <!-- Preload slot machine image. Designed by Nikita Golubev from Flaticon -->
-  <img src=https://i.imgur.com/7PvSUMI.png style="display:none;">
+  <img src=resources/slot_machine.png style="display:none;">
 </body>
 </html>
