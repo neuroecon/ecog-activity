@@ -28,7 +28,7 @@
       border: none;
       color: white;
       text-align: center;
-      padding: .5vmin 1.5vmin .5vmin 1.5vmin;
+      padding: .5vmin 1.5vmin .2vmin 1.5vmin;
       margin: 0px;
       font-size: 4vmin;
       cursor: pointer;
@@ -117,14 +117,6 @@
       border-color: #f8f8f8;
     }
 
-    .timeout-decision {
-      border-color: #f44;
-    }
-
-    .timeout-decision:hover {
-      border-color: #f44;
-    }
-
     .decision-box, .decision-box-demo, button {
       -webkit-touch-callout: none; /* iOS Safari */
         -webkit-user-select: none; /* Safari */
@@ -133,6 +125,10 @@
             -ms-user-select: none; /* Internet Explorer/Edge */
                 user-select: none; /* Non-prefixed version, currently
                                       supported by Chrome and Opera */
+    }
+
+    #next-round {
+      display: none;
     }
 
     /**
@@ -234,13 +230,12 @@
        * Page navigation setup
        **/
 
-      var pages = ["intro1", "intro2", "intro3", "intro4", "main-game", "results"];
+      var pages = ["intro1", "intro2", "intro3", "main-game", "results"];
 
       var page_dict = {
         "intro1" : document.getElementById("intro1"),
         "intro2" : document.getElementById("intro2"),
         "intro3" : document.getElementById("intro3"),
-        "intro4" : document.getElementById("intro4"),
         "main-game": document.getElementById("main-game"),
         "results": document.getElementById("results"),
       };
@@ -252,7 +247,7 @@
       function change_page(direction) {
         curr_page_index += direction;
         curr_page_index = Math.max(0, curr_page_index);
-        curr_page_index = Math.min(5, curr_page_index);
+        curr_page_index = Math.min(pages.length, curr_page_index);
         set_page(pages[curr_page_index]);
       }
 
@@ -281,11 +276,9 @@
 
       var start_game = document.getElementById('start-game');
       start_game.onclick = function() {
-        timer_div.innerHTML = "Get ready";
         round_div.innerHTML = "Round 1";
         change_page(1);
-        sleep(400);
-        start_countdown(1000);
+        new_round();
       };
 
       /**
@@ -311,7 +304,7 @@
     		  }
     		}
         if((event.keyCode || event.which) == 8){
-          if(curr_page == "intro2" || curr_page == "intro3" || curr_page == "intro4") {
+          if(curr_page == "intro2" || curr_page == "intro3") {
             change_page(-1);
           }
         }
@@ -349,6 +342,7 @@
       var round_div = document.getElementById("round-num");
       var timer_div = document.getElementById("timer");
       var view_results_button = document.getElementById("view-results");
+      var next_round_button = document.getElementById("next-round");
       var results_div = document.getElementById("results-div");
 
       /* Game constants */
@@ -356,7 +350,6 @@
       const OUTCOME_REVEAL_MS = 550; //Delay between selection and showing outcome
       const MIN_RISKY_PAYOUT = 15;
       const MAX_RISKY_PAYOUT = 35;
-      const DECISION_TIME_MS = 2000; //Amount of time to make of decision
 
       /* Game variables */
       var lock_input = true; //Ignore clicks/keyinput while this is true
@@ -368,7 +361,7 @@
         'total_response_time': 0, //Sum of time taken to respond each round
       };
       var round_num = 0; //Round num starts at 0, since it increments before each round starts
-      var remaining_time = 0; //Used by the start_timer method
+      var current_time = 0; //Used by the start_timer method
       var timer = null; //Reference to the main timer interval, set by the start_time method
       var slot_nums = null; //Length 2 array containing [visible_num, hidden_num], set by new_round()
       var safe_index = null; //Index of safe option, set by new_round()
@@ -399,16 +392,20 @@
                                </div>`;
         safe_box.innerHTML  = "$10";
         lock_input = false; //Allow input after setting up decisions
-        start_timer(DECISION_TIME_MS); //Start countdown
+        start_timer();
       }
 
+      next_round_button.onclick = function() {
+        if(next_round_button.style.display == 'inline') {
+          next_round_button.style.display = 'none';
+          new_round();
+        }
+      };
       //Remove any styles from previous round
       function clear_box_styles() {
         //Avoiding an enhanced for loop here for browser compatability
-        boxes[0].classList.remove('timeout-decision');
         boxes[0].classList.remove('selected-decision');
         boxes[0].classList.remove('other-decision');
-        boxes[1].classList.remove('timeout-decision');
         boxes[1].classList.remove('selected-decision');
         boxes[1].classList.remove('other-decision');
       }
@@ -437,48 +434,11 @@
       }
 
       //Starts timer at top of game, stores interval as 'timer' variable
-      function start_timer(time_s) {
-        remaining_time = time_s / 1000;
+      function start_timer() {
+        current_time = 0;
         timer = setInterval(async function() {
-          timer_div.innerHTML = `${remaining_time.toFixed(2)}s remaining`;
-          remaining_time -= .03;
-          if(remaining_time < 0) {
-            lock_input = true;
-            timer_div.innerHTML = "Out of time!";
-            clearInterval(timer);
-            await timeout();
-          }
-        }, 30);
-      }
-
-      //Starts the countdown before each round
-      function start_countdown(rate_ms) {
-        if(round_num == NUM_ROUNDS) {
-          view_results_button.style.display = 'inline';
-          load_results();
-          return;
-        }
-        var countdown = 3;
-        timer = setInterval(async function() {
-          timer_div.innerHTML = `Next round in ${countdown}...`;
-          if(countdown <= 0) {
-            clearInterval(timer);
-            await sleep(200);
-            new_round();
-          }
-          countdown -= 1;
-        }, rate_ms);
-      }
-
-      // Reveals number and starts next round if player runs out of time
-      async function timeout() {
-        results.miss += 1;
-        boxes[0].classList.add('timeout-decision');
-        boxes[1].classList.add('timeout-decision');
-        await sleep(OUTCOME_REVEAL_MS);
-        var hidden_num = document.getElementById('hidden-num');
-        hidden_num.style.display = "inline";
-        start_countdown(500);
+          current_time += 0.01;
+        }, 10);
       }
 
       /**
@@ -486,7 +446,7 @@
        **/
        async function pick(index) {
          if (!lock_input) {
-           results.total_response_time += DECISION_TIME_MS / 1000 - remaining_time;
+           results.total_response_time += current_time;
            await check_decision(index);
          }
        }
@@ -501,11 +461,13 @@
 
        document.addEventListener("keypress", async function(event) {
          if((event.keyCode || event.which) == 13){
-           if(curr_page == "intro4") {
+           if(curr_page == "intro3") {
              start_game.onclick();
            } else if(curr_page =="main-game") {
              if(round_num == NUM_ROUNDS) {
                view_results_button.onclick();
+             } else {
+               next_round_button.onclick();
              }
            }
            else {
@@ -531,8 +493,13 @@
           await sleep(OUTCOME_REVEAL_MS);
           reveal_outcome(selected_index);
 
-          //Start countdown to next round
-          start_countdown(500);
+          if(round_num == NUM_ROUNDS) {
+            view_results_button.style.display = 'inline';
+            load_results();
+            return;
+          } else {
+            next_round_button.style.display = "inline";
+          }
         }
 
         function reveal_outcome(selected_index) {
@@ -598,9 +565,6 @@
     }
   </script>
   <noscript>
-    <style type="text/css">
-        .pagecontainer {display:none;}
-    </style>
     <div class="noscriptmsg">
 		Please enable javascript to interact with this demo.
     </div>
@@ -621,7 +585,7 @@
   <!-- Introduction 2 -->
   <div class="main-div" id="intro2">
     <div class="intro-box">
-    The risky bet has a visible digit and a hidden digit. <br>
+    The risky bet has a visible digit and a hidden digit, both between 0 and 10. <br>
     <img src=https://i.imgur.com/QKfQsdG.png width=80%> <br>
     If the hidden digit is larger than the shown digit, you win the amount displayed. Otherwise, you lose that amount.<br>
     <button class="previous">Previous</button>
@@ -644,28 +608,20 @@
     <br>
     You can also use the '1' key to select the left option, and '3' key to select the right option. <br>
     <button class="previous">Previous</button>
-    <button class="next">Next</button>
-    </div>
-  </div>
-
-  <!-- Introduction 4-->
-  <div class="main-div" id="intro4">
-    <div class="intro-box">
-    <br> You have two seconds to make a decision.<br>
-    <img src=https://i.imgur.com/8hgSzLa.png width=74%> <br>
-    If you don't make a decision in time, the borders will turn red and you will earn nothing. <br>
-    <button class="previous">Previous</button>
     <button class="next" id="start-game">Play</button>
     </div>
   </div>
+
   <!-- Main Game -->
   <div class="main-div" id="main-game">
-    <span id="timer"></span>
+    <div id="round-num"></div>
     <div class="decisions">
       <div class = "decision-box" id="left-decision" ></div>
       <div class = "decision-box" id="right-decision"></div>
     </div>
-    <div id="round-num"></div>
+    <span id="timer"></span>
+    <br>
+    <button class="next" id="next-round">Next Round</button>
     <button class="next" id="view-results">View Results</button>
   </div>
 
