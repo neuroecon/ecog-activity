@@ -553,6 +553,8 @@
             risky_span.style.color  = "red";
             hidden_num.style.color = "red";
             if(selected_index == safe_index){
+              risky_span.style.color  = "green";
+              hidden_num.style.color = "green";
               risky_span.innerHTML = `You would have lost $${risky_val}`;
             } else {
               results.net -= risky_val;
@@ -563,6 +565,8 @@
             risky_span.style.color  = "green";
             hidden_num.style.color = "green";
             if(selected_index == safe_index){
+              risky_span.style.color  = "red";
+              hidden_num.style.color = "red";
               risky_span.innerHTML = `You would have won $${risky_val}`;
             } else {
               results.net += risky_val;
