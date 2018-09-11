@@ -218,11 +218,19 @@
       font-size: 3vmin;
     }
 
-    #results-div br {
+    #results-div br, #author-info br {
       display: block;
       margin: 0px;
       padding: 0px;
       line-height: 0px;
+    }
+
+    #author-info {
+      position:absolute;
+      bottom:1vmin;
+      right:1vmin;
+      font-size:1.5vmin;
+      text-align:right;
     }
 
     /**
@@ -260,7 +268,7 @@
       function change_page(direction) {
         curr_page_index += direction;
         curr_page_index = Math.max(0, curr_page_index);
-        curr_page_index = Math.min(pages.length, curr_page_index);
+        curr_page_index = Math.min(pages.length - 1, curr_page_index);
         set_page(pages[curr_page_index]);
       }
 
@@ -511,8 +519,8 @@
           reveal_outcome(selected_index);
 
           if(round_num == NUM_ROUNDS) {
-            view_results_button.style.display = 'inline';
             load_results();
+            view_results_button.style.display = 'inline';
             return;
           } else {
             next_round_button.style.display = "inline";
@@ -608,6 +616,7 @@
        function reset_audio() {
          for(var i = 0; i < audio.length; i++) {
            audio[i].currentTime = 0;
+           audio[i].pause();
          }
        }
 
@@ -684,6 +693,10 @@
   </div>
 
   </center>
+  <div id="author-info">
+    ©2018 Chris Wong<br>
+    UC Berkeley Neuroeconomics Lab
+  </div>
 
   <!-- Preload slot machine image. Designed by Nikita Golubev from Flaticon -->
   <img src=resources/slot_machine.png style="display:none;">
