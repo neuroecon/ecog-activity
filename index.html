@@ -1,6 +1,8 @@
 <!DOCTYPE html>
+<!-- ©2018 Chris Wong -->
 <html lang="en">
 <head>
+  <title>Gambling Activity</title>
   <meta charset="utf-8"/>
   <style>
     /**
@@ -223,6 +225,17 @@
       line-height: 0px;
     }
 
+    /**
+     * Audio
+     **/
+
+     #audio-toggle {
+       display: inline;
+       width: 8vmin;
+       background: none;
+       float: left;
+     }
+
   </style>
   <script>
     window.onload = function() {
@@ -344,6 +357,10 @@
       var view_results_button = document.getElementById("view-results");
       var next_round_button = document.getElementById("next-round");
       var results_div = document.getElementById("results-div");
+
+      var slot_win_audio = new Audio("resources/audio/slot_win.mp3");
+      var lose_audio = new Audio("resources/audio/lose.wav");
+      var win_audio = new Audio("resources/audio/win.wav");
 
       /* Game constants */
       const NUM_ROUNDS = 10; //Number of rounds
@@ -515,7 +532,7 @@
           } else {
             results.risky += 1;
           }
-
+          reset_audio();
           if(slot_nums[0] > slot_nums[1]) { //Losing
             risky_span.style.color  = "red";
             hidden_num.style.color = "red";
@@ -523,9 +540,11 @@
               risky_span.style.color  = "green";
               hidden_num.style.color = "green";
               risky_span.innerHTML = `You would have lost $${risky_val}`;
+              win_audio.play();
             } else {
               results.net -= risky_val;
               risky_span.innerHTML = `You lose <br> $${risky_val}`;
+              lose_audio.play();
             }
           }
           else { //Winning
@@ -535,9 +554,11 @@
               risky_span.style.color  = "red";
               hidden_num.style.color = "red";
               risky_span.innerHTML = `You would have won $${risky_val}`;
+              lose_audio.play();
             } else {
               results.net += risky_val;
               risky_span.innerHTML = `You win <br> $${risky_val}`;
+              slot_win_audio.play();
             }
           }
           hidden_num.style.display = "inline"; //Reveal number either way
@@ -561,7 +582,36 @@
                                  <tr><td>Safe Choices </td><td>${results.safe} </td></tr>
                                  <tr><td>Risky Choices </td><td>${results.risky} </td></tr>
                                  <tr><td>Mean Response Time</td><td> ${average_response_time}s </td></tr></table>`;
-      }
+        }
+
+      /**
+       *  Audio
+       **/
+
+       var audio = [win_audio, lose_audio, slot_win_audio];
+       var muted = false;
+       var audio_button = document.getElementById("audio-toggle");
+       var audio_button_img = document.getElementById("audio-img");
+
+       function toggle_audio() {
+         muted = !muted;
+         for(var i = 0; i < audio.length; i++) {
+           audio[i].muted = muted;
+         }
+         if(muted) {
+           audio_button_img.src = "resources/muted.png";
+         } else {
+           audio_button_img.src = "resources/speaker.png";
+         }
+       }
+
+       function reset_audio() {
+         for(var i = 0; i < audio.length; i++) {
+           audio[i].currentTime = 0;
+         }
+       }
+
+       audio_button.onclick = toggle_audio;
     }
   </script>
   <noscript>
@@ -572,6 +622,8 @@
 </head>
 <body>
   <center>
+  <button id="audio-toggle"><img id="audio-img" src=resources/speaker.png width=100%></button>
+
   <!-- Introduction 1 -->
   <div class="main-div" id="intro1">
     <div class="intro-box">
