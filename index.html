@@ -13,6 +13,11 @@
       font-size: 5vmin;
     }
 
+    .vmin-div {
+      width: 100vmin;
+      position: relative;
+    }
+
     /**
      * Intro
      **/
@@ -631,7 +636,9 @@
 </head>
 <body>
   <center>
-  <button id="audio-toggle"><img id="audio-img" src=resources/speaker.png width=100%></button>
+  <div class="vmin-div">
+    <button id="audio-toggle"><img id="audio-img" src=resources/speaker.png width=100%></button>
+  </div>
 
   <!-- Introduction 1 -->
   <div class="main-div" id="intro1">
