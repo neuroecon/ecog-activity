@@ -13,11 +13,6 @@
       font-size: 5vmin;
     }
 
-    .vmin-div {
-      width: 100vmin;
-      position: relative;
-    }
-
     /**
      * Intro
      **/
@@ -243,10 +238,14 @@
      **/
 
      #audio-toggle {
-       display: inline;
-       width: 8vmin;
+       display: block;
+       width: 7vmin;
+       height: 7vmin;
        background: none;
-       float: left;
+       margin-bottom: -7vmin;
+       padding: 1vmin;
+       position: relative;
+       right: 46vmin;
      }
 
   </style>
@@ -636,9 +635,7 @@
 </head>
 <body>
   <center>
-  <div class="vmin-div">
-    <button id="audio-toggle"><img id="audio-img" src=resources/speaker.png width=100%></button>
-  </div>
+  <button id="audio-toggle"><img id="audio-img" src=resources/speaker.png width=100%></button>
 
   <!-- Introduction 1 -->
   <div class="main-div" id="intro1">
